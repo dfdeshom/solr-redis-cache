@@ -19,8 +19,8 @@ public class RedisCache
     private final byte[] dataField;
     private final byte[] flagField;
 
-    public RedisCache(String host) throws java.io.UnsupportedEncodingException{
-        jedis = new BinaryJedis(host);
+    public RedisCache(String host,int port) throws java.io.UnsupportedEncodingException{
+        jedis = new BinaryJedis(host,port);
         encoder = new SerializingTranscoder();
         hashName = "rediscache".getBytes("UTF-8");
         flagField = "flag".getBytes("UTF-8");
@@ -47,6 +47,9 @@ public class RedisCache
     public Object get(String key) throws java.io.UnsupportedEncodingException {
         byte[] dataValue = jedis.hget(hashName,
                                       buildKey(key,dataField));
+        if (dataValue==null){
+            return new Object();
+        }
         byte[] _flagValue = jedis.hget(hashName,
                                        buildKey(key,flagField));
         
@@ -75,7 +78,7 @@ public class RedisCache
 
     public static void main( String[] args ) throws java.io.UnsupportedEncodingException
     {
-        RedisCache rc = new RedisCache("localhost");
+        RedisCache rc = new RedisCache("localhost",6379);
         LinkedList list = new LinkedList();
         list.add("1");
         list.add("abc 22 3");

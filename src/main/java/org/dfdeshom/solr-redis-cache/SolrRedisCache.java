@@ -84,7 +84,7 @@ public class SolrRedisCache<K,V> extends SolrCacheBase implements SolrCache<K,V>
         description = "RedisCache("+host+", Port:"+port+", keyPrefix:"+keyPrefix+")";
 
         try{
-            cache = new RedisCache(host+":"+ Integer.toString(port));
+            cache = new RedisCache(host,port);
         }
         catch(java.io.UnsupportedEncodingException e){
 
@@ -108,13 +108,13 @@ public class SolrRedisCache<K,V> extends SolrCacheBase implements SolrCache<K,V>
         return (int)cache.size();
     }
 
-    public Object put(Object key, Object value) {
+    public V put(K key, V value) {
         if (getState() == State.LIVE) {
             stats.inserts.incrementAndGet();
         }
         
         try{
-            cache.put(toKeyString(key), value);
+            cache.put(toKeyString((Object)key), (Object)value);
             inserts++;
         }
         catch(Exception e){
@@ -123,15 +123,11 @@ public class SolrRedisCache<K,V> extends SolrCacheBase implements SolrCache<K,V>
         return value;
     
     }
-
-    private String toKeyString(Object key) {
-        return keyPrefix+":"+key.hashCode();
-    }
     
-    public Object get(Object key) {
+    public V get(K key) {
         Object val = new Object();
         try{
-            val = cache.get(toKeyString(key));
+            val = (V)cache.get(toKeyString(key));
         }
         catch(java.io.UnsupportedEncodingException e) {
             
@@ -145,9 +141,13 @@ public class SolrRedisCache<K,V> extends SolrCacheBase implements SolrCache<K,V>
                 stats.hits.incrementAndGet();
             }
         }
-        return val;
+        return (V)val;
         
 	}
+
+    private String toKeyString(Object key) {
+        return keyPrefix+":"+key.hashCode();
+    }
 
     public void clear(){
         try{

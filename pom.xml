@@ -24,6 +24,7 @@
               <artifactSet>
                 <includes>
                   <include>redis.clients:*</include>
+                  <include>spy:spymemcached:*</include>
                 </includes>
               </artifactSet>
             </configuration>

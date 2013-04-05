@@ -107,25 +107,27 @@ public class SolrRedisCache<K,V> extends SolrCacheBase implements SolrCache<K,V>
     public int size() {
         return (int)cache.size();
     }
-
+    
+    @Override
     public V put(K key, V value) {
         if (getState() == State.LIVE) {
             stats.inserts.incrementAndGet();
         }
         
         try{
-            cache.put(toKeyString((Object)key), (Object)value);
+            cache.put(toKeyString(key), value);
             inserts++;
         }
         catch(Exception e){
-        
+            System.out.println(e);
         }
         return value;
     
     }
     
+    @Override
     public V get(K key) {
-        Object val = new Object();
+        V val = null;
         try{
             val = (V)cache.get(toKeyString(key));
         }
@@ -141,11 +143,15 @@ public class SolrRedisCache<K,V> extends SolrCacheBase implements SolrCache<K,V>
                 stats.hits.incrementAndGet();
             }
         }
-        return (V)val;
+        return val;
         
 	}
 
-    private String toKeyString(Object key) {
+    private String toValueString(V value) {
+        return keyPrefix+":"+value.hashCode();
+    }
+
+    private String toKeyString(K key) {
         return keyPrefix+":"+key.hashCode();
     }
 

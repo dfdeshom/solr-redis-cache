@@ -11,7 +11,7 @@ import java.util.LinkedList;
  * Generic Redis cache to stores any serializable Object
  *
  */
-public class RedisCache 
+public class RedisCache<K,V> 
 {
     private BinaryJedis jedis;
     SerializingTranscoder encoder;
@@ -28,7 +28,7 @@ public class RedisCache
         
     }
 
-    public Object put(String key, Object value) throws java.io.UnsupportedEncodingException {
+    public V put(String key, V value) throws java.io.UnsupportedEncodingException {
         CachedData cd = encoder.encode(value);
         byte[] bytevalue = cd.getData();
         
@@ -44,18 +44,18 @@ public class RedisCache
         return value;
     }
 
-    public Object get(String key) throws java.io.UnsupportedEncodingException {
+    public V get(String key) throws java.io.UnsupportedEncodingException {
         byte[] dataValue = jedis.hget(hashName,
                                       buildKey(key,dataField));
         if (dataValue==null){
-            return new Object();
+            return null;
         }
         byte[] _flagValue = jedis.hget(hashName,
                                        buildKey(key,flagField));
         
         int flagValue = new Integer(new String(_flagValue,"UTF-8"));
         CachedData cd = new CachedData(flagValue, dataValue,CachedData.MAX_SIZE);
-        Object res = encoder.decode(cd);
+        V res = (V)encoder.decode(cd);
             
         return res;
     }

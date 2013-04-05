@@ -55,14 +55,12 @@ public class SolrRedisCache<K,V> extends SolrCacheBase implements SolrCache<K,V>
 	
     private String name;
     private int port;
-    private String defaultString = "localhost";
     private String keyPrefix = "";
     
-    private State state;
     private String description="Redis Cache";
     
     public Object init(Map args, Object persistence, CacheRegenerator regenerator) {
-        state=State.CREATED;
+        super.init(args, regenerator);
         name = (String)args.get("name");
 
         String prefix = (String)args.get("keyPrefix");
@@ -111,12 +109,13 @@ public class SolrRedisCache<K,V> extends SolrCacheBase implements SolrCache<K,V>
     }
 
     public Object put(Object key, Object value) {
-        if (state == State.LIVE) {
+        if (getState() == State.LIVE) {
             stats.inserts.incrementAndGet();
         }
         
         try{
             cache.put(toKeyString(key), value);
+            inserts++;
         }
         catch(Exception e){
         
@@ -137,7 +136,7 @@ public class SolrRedisCache<K,V> extends SolrCacheBase implements SolrCache<K,V>
         catch(java.io.UnsupportedEncodingException e) {
             
         }
-        if (state == State.LIVE) {
+        if (getState() == State.LIVE) {
             // only increment lookups and hits if we are live.
             lookups++;
             stats.lookups.incrementAndGet();
